@@ -1,0 +1,168 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+
+<Base title="mindsql">
+  <section class="hero container">
+    <h1>mindsql</h1>
+    <p class="lede">把想法写成代码，把代码放进开源。</p>
+    <a class="btn-primary" href="https://github.com/mindsql">在 GitHub 看项目</a>
+
+    <div class="query">
+      <code class="query-sql">select name, status from projects order by shipped;</code>
+      <table>
+        <thead>
+          <tr><th scope="col">name</th><th scope="col">status</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="2" class="empty">返回 0 行。第一个开源项目在路上，完成后会出现在 <a href="https://github.com/mindsql">github.com/mindsql</a>。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="projects" class="container block">
+    <h2>项目</h2>
+    <p class="body-text">
+      还没有公开的项目。计划从顺手用得上的小工具开始，做出来就开源，
+      每个项目的介绍会出现在这里。
+    </p>
+  </section>
+
+  <section class="container block">
+    <h2>写作</h2>
+    {posts.length > 0 ? (
+      <ul class="post-list">
+        {posts.map((post) => (
+          <li>
+            <time datetime={post.data.pubDate.toISOString()}>
+              {post.data.pubDate.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })}
+            </time>
+            <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="body-text">还没有文章。</p>
+    )}
+    <p class="body-text"><a href="/blog">全部文章</a></p>
+  </section>
+
+  <section id="about" class="container block">
+    <h2>关于</h2>
+    <p class="body-text">
+      mindsql，写代码的人。这个站记录我的开源项目和一些想法，
+      所有代码都在 GitHub 上公开。
+    </p>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    padding-block: clamp(3.5rem, 9vh, 6rem) 3.5rem;
+  }
+  .hero h1 {
+    font-family: var(--mono);
+    font-size: clamp(2.4rem, 6vw, 3.4rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+  .lede {
+    margin-top: 0.9rem;
+    font-size: 1.18rem;
+    color: var(--ink-2);
+    max-width: var(--measure);
+  }
+  .hero .btn-primary {
+    margin-top: 1.6rem;
+  }
+
+  .query {
+    margin-top: 2.8rem;
+    max-width: var(--measure);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+  .query-sql {
+    display: block;
+    font-family: var(--mono);
+    font-size: 0.86rem;
+    color: var(--accent-ink);
+    padding: 0.9rem 1.1rem;
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 0.86rem;
+    font-variant-numeric: tabular-nums;
+  }
+  th {
+    text-align: left;
+    font-weight: 500;
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    color: var(--ink-2);
+    padding: 0.55rem 1.1rem;
+    border-bottom: 1px solid var(--line);
+  }
+  td {
+    padding: 0.75rem 1.1rem;
+  }
+  td.empty {
+    font-family: var(--sans);
+    color: var(--ink-2);
+  }
+
+  .block {
+    padding-block: 2.6rem;
+    border-top: 1px solid var(--line);
+  }
+  h2 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 0.9rem;
+  }
+  .body-text {
+    max-width: var(--measure);
+    color: var(--ink-2);
+  }
+  .body-text a {
+    color: var(--accent-ink);
+  }
+
+  .post-list {
+    list-style: none;
+    max-width: var(--measure);
+  }
+  .post-list li {
+    display: flex;
+    gap: 1.2rem;
+    align-items: baseline;
+    padding-block: 0.45rem;
+  }
+  .post-list time {
+    font-family: var(--mono);
+    font-size: 0.84rem;
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+  .post-list a {
+    text-decoration: none;
+  }
+  .post-list a:hover {
+    text-decoration: underline;
+  }
+</style>

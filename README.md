@@ -1,26 +1,34 @@
 # mindsql.github.io
 
-个人网站源码，由 [GitHub Pages](https://pages.github.com) 驱动，访问地址：
+个人网站：**https://mindsql.github.io**
 
-**https://mindsql.github.io**
+Astro 构建，GitHub Pages 托管，push 到 main 后 Actions 自动部署。
 
-## 结构
+## 写博客
 
-- `index.html` — 单页站点，纯 HTML + 内联 CSS，零依赖（无框架、无 CDN），改完推送即生效
+在 `src/content/blog/` 新建一个 `.md` 文件：
 
-## 如何更新
+```markdown
+---
+title: 文章标题
+description: 一句话简介（可选）
+pubDate: 2026-10-28
+---
 
-```bash
-# 改 index.html 后：
-git add .
-git commit -m "update site"
-git push
+正文，Markdown。
 ```
 
-推送后约 1 分钟生效。
+提交推送即自动上线。
 
-## 规划
+## 本地开发
 
-- [ ] 第一个开源项目上线，替换占位卡片
-- [ ] 增加博客（考虑 Jekyll / Astro）
-- [ ] 自定义域名（可选）
+```bash
+npm install
+npm run dev      # 开发服务器 http://localhost:4321
+npm run build    # 构建到 dist/
+```
+
+## 设计
+
+- 设计令牌全部在 `src/styles/tokens.css` 的 `:root`，改主色/字体改这里
+- 布局按 Hallmark 规则体系（Index-First 结构、低饱和纸白 + 雾蓝主题、诚实空状态）

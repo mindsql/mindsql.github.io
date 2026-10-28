@@ -1,0 +1,73 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+
+<Base title="写作 · mindsql">
+  <section class="container">
+    <h1>写作</h1>
+    {posts.length > 0 ? (
+      <ul class="post-list">
+        {posts.map((post) => (
+          <li>
+            <time datetime={post.data.pubDate.toISOString()}>
+              {post.data.pubDate.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })}
+            </time>
+            <div>
+              <a class="post-title" href={`/blog/${post.id}/`}>{post.data.title}</a>
+              {post.data.description && <p class="post-desc">{post.data.description}</p>}
+            </div>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="body-text">还没有文章。</p>
+    )}
+  </section>
+</Base>
+
+<style>
+  h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    padding-block: 3rem 1.5rem;
+    text-wrap: balance;
+  }
+  .post-list {
+    list-style: none;
+    max-width: var(--measure);
+  }
+  .post-list li {
+    display: flex;
+    gap: 1.4rem;
+    padding-block: 0.9rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .post-list time {
+    font-family: var(--mono);
+    font-size: 0.84rem;
+    color: var(--ink-2);
+    white-space: nowrap;
+    padding-top: 0.25rem;
+  }
+  .post-title {
+    font-size: 1.05rem;
+    text-decoration: none;
+  }
+  .post-title:hover {
+    text-decoration: underline;
+  }
+  .post-desc {
+    font-size: 0.9rem;
+    color: var(--ink-2);
+    margin-top: 0.15rem;
+  }
+  .body-text {
+    color: var(--ink-2);
+    padding-bottom: 3rem;
+  }
+</style>
