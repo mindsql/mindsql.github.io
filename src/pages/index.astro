@@ -23,14 +23,25 @@ const journey = [
 <Base title="mindsql">
   <section class="bento container" aria-label="主页">
     <article class="card intro tilt">
-      <h1>mindsql</h1>
-      <p class="typing-line">
-        <span class="typing" data-phrases={JSON.stringify(phrases)}>{phrases[0]}</span><span
-          class="caret"
-          aria-hidden="true"></span>
-      </p>
+      <div class="intro-head">
+        <div>
+          <h1>mindsql</h1>
+          <p class="typing-line">
+            <span class="typing" data-phrases={JSON.stringify(phrases)}>{phrases[0]}</span><span
+              class="caret"
+              aria-hidden="true"></span>
+          </p>
+        </div>
+        <img
+          class="avatar"
+          src="/avatar.svg"
+          alt="mindsql 的头像"
+          width="84"
+          height="84" />
+      </div>
       <p class="bio">
-        做研究的人。这个主页存放我的研究兴趣、随笔笔记，和一些正在想的问题。
+        数字人文方向的研究者，关注知识组织、文本挖掘与阅读史。
+        相信写清楚是想清楚的一部分。
       </p>
       <a class="btn-primary" href="/blog">读我的文章</a>
     </article>
@@ -58,6 +69,17 @@ const journey = [
       <p>主页刚刚安顿好，下一篇随笔在酝酿中。</p>
     </article>
 
+    <article class="card research tilt" aria-label="研究方向">
+      <h2>研究方向</h2>
+      <ul class="pill-list">
+        <li>数字人文</li>
+        <li>知识组织</li>
+        <li>文本挖掘</li>
+        <li>阅读史</li>
+      </ul>
+      <p class="card-note">具体课题整理中，会陆续写进文章里。</p>
+    </article>
+
     <article class="card motto" aria-label="座右铭">
       <p class="motto-text">慢慢想，认真写。</p>
     </article>
@@ -70,6 +92,35 @@ const journey = [
       所以把笔记和随笔都放在这里。文章在「写作」一栏；
       这个主页本身也是一件慢慢打磨的作品，它的历程记录在「历程」里。
     </p>
+    <p class="body-text contact-line">
+      来信请寄 <a href="mailto:mindsql@example.com">mindsql@example.com</a>。
+    </p>
+  </section>
+
+  <section id="cv" class="container block">
+    <h2>简历</h2>
+    <div class="cv-grid">
+      <div>
+        <h3>教育</h3>
+        <ol class="timeline">
+          <li><time>2024 — 至今</time><p>临江大学 信息管理学院，硕士在读</p></li>
+          <li><time>2020 — 2024</time><p>临江大学 人文学院，本科</p></li>
+        </ol>
+      </div>
+      <div>
+        <h3>经历</h3>
+        <ol class="timeline">
+          <li><time>2026</time><p>建立这个主页，开始公开写作</p></li>
+          <li><time>2025</time><p>参与地方志文本数字化整理项目</p></li>
+          <li><time>2024</time><p>本科论文：地方志目录的量化分析</p></li>
+        </ol>
+      </div>
+    </div>
+    <h3 class="papers-head">论文与长文</h3>
+    <ul class="papers">
+      <li><span>《目录学的计算方法：一个综述》</span><em>撰写中</em></li>
+      <li><span>《卡片盒笔记法在文献综述里的应用》</span><em>撰写中</em></li>
+    </ul>
   </section>
 
   <section class="container block">
@@ -162,6 +213,7 @@ const journey = [
     grid-template-areas:
       'intro intro recent'
       'intro intro now'
+      'research research research'
       'motto motto motto';
     gap: 1rem;
     padding-block: 2.6rem 1rem;
@@ -169,11 +221,12 @@ const journey = [
   .intro { grid-area: intro; }
   .recent { grid-area: recent; }
   .now { grid-area: now; }
+  .research { grid-area: research; }
   .motto { grid-area: motto; }
 
   @media (max-width: 720px) {
     .bento {
-      grid-template-areas: 'intro' 'recent' 'now' 'motto';
+      grid-template-areas: 'intro' 'recent' 'now' 'research' 'motto';
     }
   }
 
@@ -286,6 +339,78 @@ const journey = [
     font-weight: 700;
     letter-spacing: 0.06em;
     color: var(--ink);
+  }
+
+  .intro-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.2rem;
+  }
+  .avatar {
+    border-radius: 16px;
+    flex-shrink: 0;
+  }
+
+  .pill-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+  }
+  .pill-list li {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.12rem 0.85rem;
+    font-size: 0.9rem;
+    color: var(--ink-2);
+  }
+
+  .contact-line {
+    margin-top: 0.7rem;
+  }
+
+  .cv-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.2rem;
+    max-width: var(--measure);
+  }
+  @media (max-width: 720px) {
+    .cv-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  .cv-grid h3,
+  .papers-head {
+    font-family: var(--serif);
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.9rem;
+  }
+  .papers-head {
+    margin-top: 1.8rem;
+  }
+  .papers {
+    list-style: none;
+    max-width: var(--measure);
+  }
+  .papers li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding-block: 0.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .papers em {
+    font-style: normal;
+    font-size: 0.78rem;
+    color: var(--ink-2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.05rem 0.7rem;
+    white-space: nowrap;
   }
 
   .block {
