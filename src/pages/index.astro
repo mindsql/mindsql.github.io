@@ -5,15 +5,67 @@ import { getCollection } from 'astro:content';
 const posts = (await getCollection('blog')).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
+
+// 构建时从 GitHub 公开 API 拉数据（拿不到就回退到当前的真实值）
+let gh = { public_repos: 1, followers: 0, created_at: '2026-10-27T07:12:13Z' };
+try {
+  const res = await fetch('https://api.github.com/users/mindsql');
+  if (res.ok) {
+    const d = await res.json();
+    gh = { public_repos: d.public_repos, followers: d.followers, created_at: d.created_at };
+  }
+} catch {
+  // 离线构建：保留回退值
+}
+const joinedDays = Math.max(
+  1,
+  Math.floor((Date.now() - Date.parse(gh.created_at)) / 86400000)
+);
+
+const phrases = [
+  '把想法写成代码，把代码放进开源。',
+  '做点用得上的开源小工具。',
+  '把每个想法慢慢部署成现实。',
+];
+
+const log = [
+  { date: '2026-10-27', text: '注册 GitHub 账号，mindsql 这个代号开始存在。' },
+  { date: '2026-10-28', text: '网站第一版上线：Astro 构建，GitHub Pages 托管。' },
+  { date: '2026-10-28', text: '主页改版 Bento 版：打字机、GitHub 数据卡、构建日志。' },
+];
 ---
 
 <Base title="mindsql">
-  <section class="hero container">
-    <h1>mindsql</h1>
-    <p class="lede">把想法写成代码，把代码放进开源。</p>
-    <a class="btn-primary" href="https://github.com/mindsql">在 GitHub 看项目</a>
+  <section class="bento container" aria-label="主页">
+    <article class="card intro tilt">
+      <h1>mindsql</h1>
+      <p class="typing-line">
+        <span class="typing" data-phrases={JSON.stringify(phrases)}>{phrases[0]}</span><span
+          class="caret"
+          aria-hidden="true"></span>
+      </p>
+      <p class="about-short">
+        写代码的人。这个站记录我的开源项目和想法，所有代码都在 GitHub 上公开。
+      </p>
+      <a class="btn-primary" href="https://github.com/mindsql">在 GitHub 看项目</a>
+    </article>
 
-    <div class="query">
+    <article class="card gh tilt" aria-label="GitHub 数据">
+      <h2>GitHub</h2>
+      <dl class="stats">
+        <div><dt>公开仓库</dt><dd>{gh.public_repos}</dd></div>
+        <div><dt>关注者</dt><dd>{gh.followers}</dd></div>
+        <div><dt>活跃天数</dt><dd>{joinedDays}</dd></div>
+      </dl>
+      <p class="gh-note">构建时从 GitHub API 获取</p>
+    </article>
+
+    <article class="card now tilt" aria-label="最近在做什么">
+      <h2>现在</h2>
+      <p>正在准备第一个开源项目，做出来就填进下面那张表。</p>
+    </article>
+
+    <article id="projects" class="card query-card" aria-label="项目">
       <code class="query-sql">select name, status from projects order by shipped;</code>
       <table>
         <thead>
@@ -21,19 +73,26 @@ const posts = (await getCollection('blog')).sort(
         </thead>
         <tbody>
           <tr>
-            <td colspan="2" class="empty">返回 0 行。第一个开源项目在路上，完成后会出现在 <a href="https://github.com/mindsql">github.com/mindsql</a>。</td>
+            <td colspan="2" class="empty">
+              返回 0 行。第一个开源项目在路上，完成后会出现在
+              <a href="https://github.com/mindsql">github.com/mindsql</a>。
+            </td>
           </tr>
         </tbody>
       </table>
-    </div>
+    </article>
   </section>
 
-  <section id="projects" class="container block">
-    <h2>项目</h2>
-    <p class="body-text">
-      还没有公开的项目。计划从顺手用得上的小工具开始，做出来就开源，
-      每个项目的介绍会出现在这里。
-    </p>
+  <section id="log" class="container block">
+    <h2>构建日志</h2>
+    <ol class="timeline">
+      {log.map((item) => (
+        <li>
+          <time>{item.date}</time>
+          <p>{item.text}</p>
+        </li>
+      ))}
+    </ol>
   </section>
 
   <section class="container block">
@@ -54,21 +113,103 @@ const posts = (await getCollection('blog')).sort(
     )}
     <p class="body-text"><a href="/blog">全部文章</a></p>
   </section>
-
-  <section id="about" class="container block">
-    <h2>关于</h2>
-    <p class="body-text">
-      mindsql，写代码的人。这个站记录我的开源项目和一些想法，
-      所有代码都在 GitHub 上公开。
-    </p>
-  </section>
 </Base>
 
-<style>
-  .hero {
-    padding-block: clamp(3.5rem, 9vh, 6rem) 3.5rem;
+<script>
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // 打字机：多短语循环（关闭动画时保持第一条静态文案）
+  const typing = document.querySelector<HTMLSpanElement>('.typing');
+  if (typing && !reduced) {
+    const phrases = JSON.parse(typing.dataset.phrases ?? '[]') as string[];
+    if (phrases.length > 1) {
+      let pi = 0;
+      let ci = phrases[0].length;
+      let deleting = true;
+      const step = () => {
+        if (deleting) {
+          ci -= 1;
+          if (ci === 0) {
+            deleting = false;
+            pi = (pi + 1) % phrases.length;
+          }
+        } else {
+          ci += 1;
+          if (ci === phrases[pi].length) {
+            deleting = true;
+            window.setTimeout(step, 2400);
+            return;
+          }
+        }
+        typing.textContent = phrases[pi].slice(0, ci);
+        window.setTimeout(step, deleting ? 38 : 120);
+      };
+      window.setTimeout(step, 2600);
+    }
   }
-  .hero h1 {
+
+  // 卡片倾斜：跟随鼠标的轻微 3D（只用 transform）
+  if (!reduced) {
+    document.querySelectorAll<HTMLElement>('.tilt').forEach((card) => {
+      card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        card.style.setProperty('--ry', `${(x * 3).toFixed(2)}deg`);
+        card.style.setProperty('--rx', `${(-y * 3).toFixed(2)}deg`);
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.setProperty('--rx', '0deg');
+        card.style.setProperty('--ry', '0deg');
+      });
+    });
+  }
+</script>
+
+<style>
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      'intro intro gh'
+      'intro intro now'
+      'query query query';
+    gap: 1rem;
+    padding-block: 2.6rem 1rem;
+  }
+  .intro { grid-area: intro; }
+  .gh { grid-area: gh; }
+  .now { grid-area: now; }
+  .query-card { grid-area: query; }
+
+  @media (max-width: 720px) {
+    .bento {
+      grid-template-areas: 'intro' 'gh' 'now' 'query';
+    }
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+
+  .tilt {
+    transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition: transform 0.18s ease-out, box-shadow 0.18s ease-out;
+  }
+  .tilt:hover {
+    box-shadow: var(--card-shadow);
+  }
+
+  .intro {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.9rem;
+  }
+  .intro h1 {
     font-family: var(--mono);
     font-size: clamp(2.4rem, 6vw, 3.4rem);
     font-weight: 600;
@@ -76,29 +217,77 @@ const posts = (await getCollection('blog')).sort(
     line-height: 1.15;
     text-wrap: balance;
   }
-  .lede {
-    margin-top: 0.9rem;
-    font-size: 1.18rem;
-    color: var(--ink-2);
-    max-width: var(--measure);
+  .typing-line {
+    font-family: var(--mono);
+    font-size: 1.05rem;
+    color: var(--accent-ink);
+    min-height: 1.9em;
   }
-  .hero .btn-primary {
-    margin-top: 1.6rem;
+  .caret {
+    display: inline-block;
+    width: 0.55em;
+    height: 1.1em;
+    background: var(--accent);
+    vertical-align: -0.15em;
+    margin-left: 4px;
+    animation: caret-blink 1.1s steps(1) infinite;
+  }
+  @keyframes caret-blink {
+    50% { opacity: 0; }
+  }
+  .about-short {
+    color: var(--ink-2);
+    max-width: 30em;
+  }
+  .intro .btn-primary {
+    align-self: flex-start;
+    margin-top: 0.4rem;
   }
 
-  .query {
-    margin-top: 2.8rem;
-    max-width: var(--measure);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--surface);
+  .card h2 {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--ink-2);
+    margin-bottom: 0.8rem;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+  .stats dt {
+    font-size: 0.78rem;
+    color: var(--ink-2);
+  }
+  .stats dd {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.55rem;
+    font-weight: 600;
+    margin-top: 0.1rem;
+  }
+  .gh-note {
+    margin-top: 0.9rem;
+    font-size: 0.75rem;
+    color: var(--ink-2);
+  }
+
+  .now p {
+    color: var(--ink-2);
+    font-size: 0.95rem;
+  }
+
+  .query-card {
+    padding: 0;
+    overflow: hidden;
   }
   .query-sql {
     display: block;
     font-family: var(--mono);
     font-size: 0.86rem;
     color: var(--accent-ink);
-    padding: 0.9rem 1.1rem;
+    padding: 0.9rem 1.2rem;
     border-bottom: 1px solid var(--line);
     overflow-x: auto;
   }
@@ -115,11 +304,11 @@ const posts = (await getCollection('blog')).sort(
     font-family: var(--sans);
     font-size: 0.8rem;
     color: var(--ink-2);
-    padding: 0.55rem 1.1rem;
+    padding: 0.55rem 1.2rem;
     border-bottom: 1px solid var(--line);
   }
   td {
-    padding: 0.75rem 1.1rem;
+    padding: 0.8rem 1.2rem;
   }
   td.empty {
     font-family: var(--sans);
@@ -127,20 +316,51 @@ const posts = (await getCollection('blog')).sort(
   }
 
   .block {
-    padding-block: 2.6rem;
+    padding-block: 2.4rem;
     border-top: 1px solid var(--line);
   }
-  h2 {
+  .block h2 {
     font-size: 1.05rem;
     font-weight: 600;
-    margin-bottom: 0.9rem;
+    margin-bottom: 1rem;
   }
   .body-text {
     max-width: var(--measure);
     color: var(--ink-2);
   }
-  .body-text a {
-    color: var(--accent-ink);
+
+  .timeline {
+    list-style: none;
+    max-width: var(--measure);
+    border-left: 2px solid var(--line);
+    margin-left: 0.3rem;
+  }
+  .timeline li {
+    position: relative;
+    padding: 0 0 1.3rem 1.4rem;
+  }
+  .timeline li:last-child {
+    padding-bottom: 0.2rem;
+  }
+  .timeline li::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 0.45em;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-ink);
+  }
+  .timeline time {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--ink-2);
+  }
+  .timeline p {
+    margin-top: 0.1rem;
+    color: var(--ink-2);
+    font-size: 0.95rem;
   }
 
   .post-list {

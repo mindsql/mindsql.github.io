@@ -1,5 +1,5 @@
 /* Hallmark · v2.0.0 · applied manually · mindsql site · 2026-10-28
-   shape: index-first · theme: custom (paper + dusty slate, low-saturation light, by request)
+   shape: bento index · theme: custom (paper + dusty slate, low-saturation light, by request)
    genre: editorial · job: see the projects, follow to github
    posture: restrained · hero: index — the query table is the signature
    nav: wordmark and four links · footer: three separate lines, no middot joins
@@ -17,6 +17,7 @@
   --accent: #7d97a5;
   --accent-ink: #33586b;
   --accent-wash: #edf1f3;
+  --card-shadow: 0 6px 22px rgba(38, 41, 46, 0.07);
 
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
     "Hiragino Sans GB", "Microsoft YaHei", sans-serif;

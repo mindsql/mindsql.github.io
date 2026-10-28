@@ -3,6 +3,9 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  schedule:
+    # 北京时间每天 21:37 重新构建，刷新主页的 GitHub 数据卡
+    - cron: '37 13 * * *'
   workflow_dispatch:
 
 permissions:
